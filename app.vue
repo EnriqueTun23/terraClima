@@ -1,34 +1,64 @@
 <template>
-  <div class="min-h-screen bg-gray-900 text-white flex flex-col items-center p-6">
-    <h1 class="text-3xl font-bold mb-6">TerraClima - Escáner de Humedad</h1>
-    <div class="bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-md">
-      <label class="block mb-2">Latitud:</label>
-      <input v-model="lat" type="number" class="w-full p-2 rounded bg-gray-700 text-white border border-gray-600" placeholder="Ej. 34.05" required />
-      
-      <label class="block mt-4 mb-2">Longitud:</label>
-      <input v-model="lon" type="number" class="w-full p-2 rounded bg-gray-700 text-white border border-gray-600" placeholder="Ej. -118.25" required />
-      
-      <label class="block mt-4 mb-2">Fecha:</label>
-      <input v-model="date" type="date" class="w-full p-2 rounded bg-gray-700 text-white border border-gray-600" required />
-      
-      <label class="block mt-4 mb-2">Proveedor:</label>
-      <select v-model="provider" class="w-full p-2 rounded bg-gray-700 text-white border border-gray-600">
-        <option v-for="prov in providers" :key="prov.value" :value="prov.value">{{ prov.label }}</option>
-      </select>
-      
-      <button @click="fetchHumidity" class="mt-6 w-full py-2 px-4 rounded-lg font-bold flex justify-center items-center" :class="humidity !== null ? (humidity > 30 ? 'bg-green-600' : 'bg-red-600') : 'bg-blue-600'">
-        <span v-if="loading" class="loader mr-2"></span>
-        {{ loading ? 'Analizando...' : 'Escanear el Clima' }}
-      </button>
-      
-      <p v-if="message" class="mt-4 text-center" :class="humidity !== null && humidity > 30 ? 'text-green-400' : 'text-red-400'">{{ message }}</p>
-    </div>
+  <div :class="['min-h-screen flex flex-col items-center p-6 transition-all duration-500', humidity !== null ? (humidity > 30 ? 'bg-green-900' : 'bg-red-900') : 'bg-gray-900']">
+    <h1 class="text-3xl font-bold mb-6 text-white">TerraClima - Escáner de Humedad</h1>
+    
+    <Card class="w-full max-w-md">
+      <CardContent class="p-6 space-y-4">
+        <div>
+          <Label for="lat">Latitud:</Label>
+          <Input id="lat" v-model="lat" type="number" placeholder="Ej. 34.05" required />
+        </div>
+        
+        <div>
+          <Label for="lon">Longitud:</Label>
+          <Input id="lon" v-model="lon" type="number" placeholder="Ej. -118.25" required />
+        </div>
+        
+        <div>
+          <Label for="date">Fecha:</Label>
+          <Input id="date" v-model="date" type="date" required />
+        </div>
+        
+        <div>
+          <Label for="provider">Proveedor:</Label>
+          <Select v-model="provider">
+            <SelectTrigger>
+              <SelectValue placeholder="Selecciona un proveedor" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem v-for="prov in providers" :key="prov.value" :value="prov.value">
+                {{ prov.label }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <Button @click="fetchHumidity" class="w-full" :variant="humidity !== null ? (humidity > 30 ? 'default' : 'destructive') : 'default'" :disabled="loading">
+          <Loader2 v-if="loading" class="mr-2 animate-spin" />
+          {{ loading ? 'Analizando...' : 'Escanear el Clima' }}
+        </Button>
+        
+        <div v-if="humidity !== null" class="text-center mt-4">
+          <span class="text-6xl" :class="humidity > 30 ? 'text-green-400' : 'text-red-400'">
+            {{ humidity > 30 ? '🌿' : '🔥' }}
+          </span>
+          <p class="mt-2 text-lg font-semibold" :class="humidity > 30 ? 'text-green-400' : 'text-red-400'">
+            {{ message }}
+          </p>
+        </div>
+      </CardContent>
+    </Card>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue';
-
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-vue-next";
 interface Provider {
   label: string;
   value: string;
