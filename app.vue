@@ -48,7 +48,16 @@
         </div>
       </CardContent>
     </Card>
+
+    <div class="m-8" v-if="histories.length">
+      <HumidityHistory :humidityHistory="histories" />
+    </div>
+
+    <div v-if="histories.length">
+      <HumidityChart :humidityCharts="histories" />
+    </div>
   </div>
+  
 </template>
 
 <script setup lang="ts">
@@ -59,6 +68,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-vue-next";
+import HumidityHistory from '@/components/HumidityHistory.vue';
+import HumidityChart from '@/components/HumidityChart.vue';
 interface Provider {
   label: string;
   value: string;
@@ -77,6 +88,7 @@ const provider = ref<string>('openweather');
 const humidity = ref<number | null>(null);
 const loading = ref<boolean>(false);
 const message = ref<string>('');
+const histories = ref<HumidityResponse[]>([]);
 
 const providers: Provider[] = [
   { label: 'OpenWeatherMap', value: 'openweather' },
@@ -98,7 +110,7 @@ const fetchHumidity = async () => {
       body: { lat: lat.value, lon: lon.value, date: date.value, provider: provider.value }
     });
 
-    console.log(response);
+    histories.value.push(response);
     humidity.value = response.humidity;
     message.value = response.message;
   } catch (error) {
